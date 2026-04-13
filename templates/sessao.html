@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FocusFluir</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Jersey+10&display=swap" rel="stylesheet">
+
+    <style>
+        body { 
+            background-color: #E4C5EB; 
+            min-height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            padding: 20px; 
+            font-family: sans-serif; 
+        }
+        .pixel-font { 
+            font-family: 'Jersey 10', sans-serif; 
+            font-size: 80px; 
+            color: #FFFBFB; 
+            text-shadow: 3px 3px 0 #00000033; 
+            margin-bottom: 2rem; 
+        }
+        .card-rosa { 
+            background-color: #f7a8b8; 
+            color: #FFFBFB; 
+            padding: 10px;
+            border-radius: 10px; 
+            text-align: center; 
+            font-weight: bold; 
+            margin-bottom: 10px; 
+        }
+        .input-block { 
+            background-color: #c4d9ff; 
+            border-radius: 15px; 
+            padding: 20px; 
+            margin-bottom: 20px; 
+            text-align: center; 
+        }
+        .playlist-bloco { 
+            background-color: #C379B4; 
+            border-radius: 15px; 
+            padding: 15px; 
+            height: 300px; 
+            overflow-y: auto; 
+            color: white; 
+        }
+        .btn-config { 
+            font-family: 'Jersey 10', sans-serif; 
+            font-size: 40px; 
+            color: #FFFBFB; 
+            text-shadow: 2px 2px 0px rgba(0,0,0,0.2);
+            text-decoration: none; 
+            background: none; 
+            border: none; 
+            cursor: pointer; 
+        }
+        .btn-ready { 
+            color: #FFFBFB;
+            text-shadow: 2px 2px 0px rgba(0,0,0,0.2); 
+        }
+
+        .objetivo-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: rgba(255,255,255,0.2);
+            border-radius: 8px;
+            padding: 5px 10px;
+            margin-bottom: 5px;
+            color: white;
+        }
+
+        .btn-remover {
+            background: none;
+            border: none;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+    </style>
+</head>
+
+<body>
+    <h1 class="pixel-font">Vamos Lá!!</h1>
+    
+    
+    <form id="form-foco" action="{{ url_for('iniciar_foco') }}" method="POST" class="container">
+        <div class="row">
+
+            
+            <div class="col-md-6">
+
+                <div class="input-block">
+                    <div class="card-rosa">Tempo (Minutos)</div>
+                    <input type="number" name="duracao_estudo" class="form-control" value="25" required>
+                </div>
+
+                <div class="input-block">
+                    <div class="card-rosa">Pausas (Minutos)</div>
+                    <input type="number" name="duracao_pausa" class="form-control" value="5" required>
+                </div>
+
+                <div class="input-block">
+                    <div class="card-rosa">Objetivos</div>
+
+                    <div id="lista-objetivos"></div>
+
+                    <div class="d-flex mt-2">
+                        <input type="text" id="novo-objetivo" class="form-control" placeholder="Digite um objetivo">
+                        <button type="button" class="btn btn-light ms-2" onclick="addObjetivo()">+</button>
+                    </div>
+
+                    <input type="hidden" name="objetivos" id="input-objetivos">
+                </div>
+
+            </div>
+
+            <div class="col-md-6">
+                <div class="playlist-bloco">
+                    <h4 class="text-center">Qual Playlist Hoje?</h4>
+                    <div class="list-group">
+                        {% for p in playlists %}
+                        <label class="list-group-item">
+                            <input type="radio" name="playlist_id" value="{{ p.id }}" > {{ p.nome }}
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="d-flex justify-content-between mt-5">
+            <a href="{{ url_for('index') }}" class="btn-config">Voltar</a>
+            <button type="submit" class="btn-config btn-ready">Pronto</button>
+        </div>
+    </form>
+
+    <script>
+        let objetivos = [];
+        
+        function addObjetivo() {
+            const input = document.getElementById("novo-objetivo");
+            const texto = input.value.trim();
+        
+            if (!texto) return;
+        
+            objetivos.push(texto);
+            input.value = "";
+            render();
+        }
+        
+        function removerObjetivo(i) {
+            objetivos.splice(i, 1);
+            render();
+        }
+        
+        function render() {
+            const lista = document.getElementById("lista-objetivos");
+            lista.innerHTML = "";
+        
+            objetivos.forEach((obj, i) => {
+                lista.innerHTML += `
+                    <div class="objetivo-item">
+                        <span>${obj}</span>
+                        <button type="button" class="btn-remover" onclick="removerObjetivo(${i})">x</button>
+                    </div>
+                `;
+            });
+        
+            document.getElementById("input-objetivos").value = JSON.stringify(objetivos);
+        }
+        
+        
+        document.getElementById("form-foco").addEventListener("submit", function(e) {
+            const tempo = document.querySelector("input[name='duracao_estudo']").value;
+            const pausa = document.querySelector("input[name='duracao_pausa']").value;
+            const playlist = document.querySelector("input[name='playlist_id']:checked");
+        
+            if (!tempo || tempo <= 0) {
+                alert("Defina um tempo de estudo válido.");
+                e.preventDefault();
+                return;
+            }
+        
+            if (!pausa || pausa <= 0) {
+                alert("Defina um tempo de pausa válido.");
+                e.preventDefault();
+                return;
+            }
+        
+            if (objetivos.length === 0) {
+                alert("Adicione pelo menos um objetivo.");
+                e.preventDefault();
+                return;
+            }
+        
+            
+            
+        });
+        </script>
+
+</body>
+</html>
