@@ -2,7 +2,42 @@
 
 Projeto para exercitar e aprender JPA com Spring Boot.
 
-Este documento inclui um **guia para configurar testes E2E com Playwright para Java** no Windows, usando o **Maven Wrapper** (`mvnw.cmd`).
+O **`pom.xml` já inclui** a dependência **Playwright para Java** (`com.microsoft.playwright:playwright`, escopo `test`), a propriedade `playwright.version`, o plugin **exec-maven-plugin** e um teste de fumaça em `src/test/java/.../e2e/PlaywrightSmokeTest.java` (abre `https://playwright.dev/` e valida o título).
+
+Na primeira máquina, após clonar, é preciso **instalar os binários dos navegadores** (veja os passos abaixo conforme o sistema).
+
+Este documento inclui o **Maven Wrapper**: no **Windows** use `mvnw.cmd`; no **Linux e macOS** use `./mvnw` (script shell, não o `.cmd`).
+
+---
+
+## Linux e macOS (bash / zsh)
+
+Na raiz do projeto:
+
+```bash
+chmod +x mvnw   # só se o script não estiver executável
+./mvnw -q dependency:resolve
+```
+
+**Instalar os navegadores do Playwright** — use **aspas** nas propriedades `-Dexec...`. Sem aspas, o terminal pode quebrar o argumento e o Maven interpreta `.mainClass=...` como fase do ciclo de vida (`Unknown lifecycle phase ".mainClass=..."`). Esse problema é **comum no PowerShell do Windows**; no bash/zsh do Linux/macOS a mesma regra se aplica.
+
+```bash
+./mvnw exec:java -e "-Dexec.mainClass=com.microsoft.playwright.CLI" "-Dexec.args=install"
+```
+
+**Codegen (exemplo):**
+
+```bash
+./mvnw exec:java -e "-Dexec.mainClass=com.microsoft.playwright.CLI" "-Dexec.args=codegen https://demo.playwright.dev/todomvc"
+```
+
+**Teste de fumaça:**
+
+```bash
+./mvnw -Dtest=PlaywrightSmokeTest test
+```
+
+Cache dos browsers no Linux costuma ficar em `~/.cache/ms-playwright`.
 
 ---
 
@@ -38,9 +73,15 @@ No Windows, use o wrapper **`mvnw.cmd`** na raiz do repositório:
 
 Se você tiver Maven instalado globalmente, pode usar `mvn` no lugar de `mvnw.cmd`, mas o projeto já inclui o wrapper para não depender da instalação global.
 
+### PowerShell e o erro `Unknown lifecycle phase ".mainClass=..."`
+
+No **PowerShell**, argumentos como `-Dexec.mainClass=...` são repartidos de um jeito que o Maven **não** recebe a propriedade inteira — e aparece exatamente esse erro. **Sempre** use os comandos **com aspas** nas propriedades `-D`, como nos exemplos da seção **Comandos no Windows → passo 2** abaixo (forma `"-Dexec.mainClass=..."` e `"-Dexec.args=..."`). No **cmd.exe** a forma com aspas também é a mais segura.
+
 ---
 
 ## Playwright para Java — configuração no `pom.xml`
+
+> **Já aplicado neste repositório:** propriedade `playwright.version`, dependência `playwright`, plugin `exec-maven-plugin`. Os trechos abaixo servem de referência ou para ajustes manuais.
 
 Documentação oficial: [Playwright Java — Introdução](https://playwright.dev/java/docs/intro).
 
@@ -107,32 +148,32 @@ mvnw.cmd -q dependency:resolve
 
 Obrigatório após adicionar ou atualizar o Playwright. Os arquivos vão para o cache do usuário no Windows (por exemplo em `%USERPROFILE%\AppData\Local\ms-playwright`).
 
+Prefira **sempre** as propriedades `-Dexec...` **entre aspas** (funciona no cmd, no PowerShell e evita erros parecidos com o do Linux):
+
 **cmd:**
 
 ```cmd
-mvnw.cmd exec:java -e -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args=install
+mvnw.cmd exec:java -e "-Dexec.mainClass=com.microsoft.playwright.CLI" "-Dexec.args=install"
 ```
 
 **PowerShell:**
 
 ```powershell
-.\mvnw.cmd exec:java -e -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args="install"
+.\mvnw.cmd exec:java -e "-Dexec.mainClass=com.microsoft.playwright.CLI" "-Dexec.args=install"
 ```
-
-> No **cmd**, às vezes é mais simples passar `install` sem aspas externas, como acima. No PowerShell, use `"install"` como no exemplo.
 
 **Instalar só o Chromium:**
 
 **cmd:**
 
 ```cmd
-mvnw.cmd exec:java -e -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args=install chromium
+mvnw.cmd exec:java -e "-Dexec.mainClass=com.microsoft.playwright.CLI" "-Dexec.args=install chromium"
 ```
 
 **PowerShell:**
 
 ```powershell
-.\mvnw.cmd exec:java -e -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args="install chromium"
+.\mvnw.cmd exec:java -e "-Dexec.mainClass=com.microsoft.playwright.CLI" "-Dexec.args=install chromium"
 ```
 
 **Ajuda do `install`:**
@@ -186,13 +227,13 @@ mvnw.cmd test
 **cmd:**
 
 ```cmd
-mvnw.cmd -Dtest=SmokePlaywrightTest test
+mvnw.cmd -Dtest=PlaywrightSmokeTest test
 ```
 
 **PowerShell:**
 
 ```powershell
-.\mvnw.cmd -Dtest=SmokePlaywrightTest test
+.\mvnw.cmd -Dtest=PlaywrightSmokeTest test
 ```
 
 ### 5. Gerador de testes (codegen)
@@ -204,13 +245,13 @@ Com o Playwright configurado e os browsers instalados.
 **cmd:**
 
 ```cmd
-mvnw.cmd exec:java -e -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args=codegen http://localhost:8080
+mvnw.cmd exec:java -e "-Dexec.mainClass=com.microsoft.playwright.CLI" "-Dexec.args=codegen http://localhost:8080"
 ```
 
 **PowerShell:**
 
 ```powershell
-.\mvnw.cmd exec:java -e -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args="codegen http://localhost:8080"
+.\mvnw.cmd exec:java -e "-Dexec.mainClass=com.microsoft.playwright.CLI" "-Dexec.args=codegen http://localhost:8080"
 ```
 
 **Exemplo com site de demonstração:**
@@ -218,7 +259,7 @@ mvnw.cmd exec:java -e -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args=
 **cmd:**
 
 ```cmd
-mvnw.cmd exec:java -e -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args=codegen https://demo.playwright.dev/todomvc
+mvnw.cmd exec:java -e "-Dexec.mainClass=com.microsoft.playwright.CLI" "-Dexec.args=codegen https://demo.playwright.dev/todomvc"
 ```
 
 ---
@@ -232,7 +273,7 @@ mvnw.cmd exec:java -e -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args=
 
 ```cmd
 mvnw.cmd -q dependency:resolve
-mvnw.cmd exec:java -e -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args=install
+mvnw.cmd exec:java -e "-Dexec.mainClass=com.microsoft.playwright.CLI" "-Dexec.args=install"
 ```
 
 ---
@@ -241,10 +282,19 @@ mvnw.cmd exec:java -e -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args=
 
 | Situação | O que verificar |
 |----------|------------------|
+| `Unknown lifecycle phase ".mainClass=..."` | **PowerShell (causa frequente):** use **aspas** em cada `-D`: `"-Dexec.mainClass=com.microsoft.playwright.CLI"` e `"-Dexec.args=install"`. Copie os comandos da seção *Comandos no Windows → passo 2* sem remover as aspas. |
 | `mvnw` não é reconhecido | Use `mvnw.cmd` (cmd) ou `.\mvnw.cmd` (PowerShell) na pasta do projeto. |
 | Erro ao executar `exec:java` | Confira se o `exec-maven-plugin` está no `pom.xml`. |
 | Browser não encontrado | Execute o comando `install` dos navegadores novamente após mudar a versão do Playwright. |
 | Política de execução no PowerShell | Se scripts estiverem bloqueados: `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` (apenas se o seu ambiente permitir). |
+
+### Linux e macOS
+
+| Situação | O que verificar |
+|----------|------------------|
+| `Unknown lifecycle phase ".mainClass=..."` | Mesma causa: use aspas nos `-D`. No bash/zsh isso também evita o argumento ser repartido errado. |
+| Script do Maven | Use `./mvnw`, não `mvnw.cmd` (este é só para Windows). |
+| Permissão negada | `chmod +x mvnw` na raiz do projeto. |
 
 ---
 
