@@ -1,7 +1,0 @@
-# App
-flask>=3.0
-
-# Testes
-pytest>=8.0
-playwright>=1.49
-pytest-playwright>=0.6

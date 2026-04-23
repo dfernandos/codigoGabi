@@ -17,8 +17,9 @@ jobs:
           python-version: "3.12"
           cache: "pip"
 
+      # Sem requirements.txt: mesma ideia de quem instala com "pip install flask" na máquina.
       - name: Instalar dependências
-        run: pip install -r requirements.txt
+        run: pip install flask pytest playwright pytest-playwright
 
       - name: Testes unitários
         run: python -m pytest tests/ -v
@@ -30,26 +31,7 @@ jobs:
         run: |
           set -e
           rm -f focusfluir.db
-          python - <<'PY'
-          from app import setup_database, conexao
-          setup_database()
-          conn = conexao()
-          conn.execute(
-              "INSERT INTO playlists (id, nome, imagem) VALUES (7, 'CI e2e', ?)",
-              (None,),
-          )
-          conn.commit()
-          conn.close()
-          PY
+          python -c "from app import setup_database; setup_database()"
           python -c "from app import app; app.run(host='127.0.0.1', port=5000, debug=False, use_reloader=False)" &
-          for i in $(seq 1 60); do
-            if curl -fsS "http://127.0.0.1:5000/" > /dev/null; then
-              break
-            fi
-            sleep 1
-            if [ "$i" -eq 60 ]; then
-              echo "Timeout à espera do Flask"
-              exit 1
-            fi
-          done
+          sleep 3
           python -m pytest e2e/ -v

@@ -106,10 +106,11 @@ Para visualizar o banco de dados, recomenda-se usar a extensão:
 ## ✅ Observações
 
 * Certifique-se de que o Python está corretamente configurado no PATH
-* Caso tenha problemas com dependências, tente:
+* Caso tenha problemas com dependências, tente (no mesmo ambiente em que roda a app e o pytest):
 
   ```bash
-  pip install -r requirements.txt
+  pip install flask pytest playwright pytest-playwright
+  python -m playwright install chromium
   ```
 
 ---
