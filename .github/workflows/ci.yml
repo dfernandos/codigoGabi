@@ -15,7 +15,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-          cache: "pip"
+          # Sem requirements.txt / pyproject.toml, não use cache: pip (a action falha ao achar o arquivo de lock do cache).
 
       # Sem requirements.txt: mesma ideia de quem instala com "pip install flask" na máquina.
       - name: Instalar dependências

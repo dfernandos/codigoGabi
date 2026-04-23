@@ -111,8 +111,7 @@ A seguir, o que **cada parte** do *workflow* deste projeto **faz** e **por quê*
 
 ### *Step* **Configurar Python** (`actions/setup-python@v5`)
 
-- Instala a versão de **Python** indicada (neste projeto, `3.12`);
-- **`cache: "pip"`** (opcional) acelera *builds* seguintes, guardando em *cache* os pacotes do *pip*.
+- Instala a versão de **Python** indicada (neste projeto, `3.12`). **Não** usamos `cache: pip` aqui: o `setup-python` só consegue usar *cache* de *pip* se existir `requirements.txt` ou `pyproject.toml` no repositório. Sem esses arquivos, pôr `cache: pip` gera o erro *“No file … matched to requirements.txt or pyproject.toml”*.
 
 ### *Step* **Instalar dependências**
 
