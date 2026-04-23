@@ -11,7 +11,8 @@ def test_playlist_criar(page: Page):
     """
     nome = f"e2e-pl-{uuid.uuid4().hex[:12]}"
     page.goto("/")
-    page.get_by_role("link", name="Criar Playlists").click()
+    # <a> com `role="button"` (Bootstrap) expõe como *button* no a11y, não como *link*.
+    page.get_by_role("button", name="Criar Playlists").click()
 
     page.locator('input[name="nome_playlist"]').fill(nome)
     page.locator('textarea[name="links_musica"]').fill(
